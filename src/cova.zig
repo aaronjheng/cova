@@ -115,11 +115,9 @@ pub const ArgIteratorGeneric = union(enum) {
 
     /// Peek at the next argument token without advancing this Iterator.
     pub fn peek(self: *@This()) ?[:0]const u8 {
-        switch (meta.activeTag(self.*)) {
+        switch (self.*) {
             .raw => return self.raw.peek(),
-            inline else => |tag| {
-                var iter = @field(self, @tagName(tag));
-                // TODO: Create a PR for this in `std.process`?
+            inline else => |*iter| {
                 if (builtin.os.tag != .windows) {
                     const peek_arg = iter.next();
                     iter.inner.index -= 1;
@@ -130,11 +128,11 @@ pub const ArgIteratorGeneric = union(enum) {
                     const iter_start = iter.inner.start;
                     const iter_end = iter.inner.end;
                     const peek_arg = iter.next();
-                    iter.inner.index = iter_idx; 
-                    iter.inner.start = iter_start; 
-                    iter.inner.end = iter_end; 
+                    iter.inner.index = iter_idx;
+                    iter.inner.start = iter_start;
+                    iter.inner.end = iter_end;
                     return peek_arg;
-                } 
+                }
             },
         }
     }
